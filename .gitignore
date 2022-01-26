@@ -1,5 +1,16 @@
+# 改用 .do 文件进行仿真
+sim/*/work
+sim/*/vsim.wlf
 
-# sim 文件夹下的东西太杂，不要加入的好
+*.mti
+*.mpf
+*.wlf
+modelsim.ini
 
-sim/
+db/
+incremental_db/
+output_files/
 
+greybox_tmp/
+
+*.ipinfo
