@@ -112,15 +112,15 @@ initial begin
     sys_reset(100);      // 复位 100 个系统时间
     // 将文件写入
     en = 1'b0;
-    #(`PERIOD/2)
+    @(posedge clk);
     en = 1'b1;
     // #(`PERIOD*1)
     $readmemb("testcase_0.txt", llr_in);
-    #(`PERIOD*1)
+    @(posedge clk);
     $readmemb("testcase_1.txt", llr_in);
-    #(`PERIOD*1)
+    @(posedge clk);
     $readmemb("testcase_2.txt", llr_in);
-    #(`PERIOD*100)
+    repeat (100) @(posedge clk);
     $stop;
 end
 

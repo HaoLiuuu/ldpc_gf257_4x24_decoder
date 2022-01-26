@@ -14,7 +14,10 @@
 module ldpc_cpu #(
 	parameter LLR_WIDTH = 8,
 	parameter ROW_WEIGHT = 24,
-	parameter PIPE_DELAY = 7 // 这个值还是根据上板子的时候确定吧
+	parameter PIPE_DELAY = 6 // 这个值还是根据上板子的时候确定吧
+    // 2022/1/23 14:17:48
+    // 按照手画的电路上显示就应该是 6
+    // 但为何 testbench 和 top 上的仿真结果对不上
 )(
 	input clk,    // Clock
 	input en,
@@ -518,9 +521,12 @@ end
 // =============================================================================
 //                          pre output
 // =============================================================================
-
-assign min = reg_final_min;
-assign submin = reg_final_submin;
+// 2022/1/22 23:02:54
+// 增加 0.5 偏置
+// assign min = $signed(reg_final_min) >>> 1;
+// assign submin = $signed(reg_final_submin) >>> 1;
+assign min = reg_final_min >> 1;
+assign submin = reg_final_submin >> 1;
 
 // 将绝对值转换为补码
 // 这个模块是不必要的，在我学到了一种新方法之后，这种方法更加显得不好
@@ -548,7 +554,7 @@ reg [LLR_WIDTH-2:0] reg_min;
 
 always @(posedge clk) begin
     if (en) begin
-        reg_min <= min;
+        reg_min <= reg_final_min;
     end
 end
 
@@ -579,6 +585,8 @@ end
 // =============================================================================
 //                          output llr
 // =============================================================================
+// 2022/1/17 16:47:10
+// 这一部分输出逻辑可以试试用 case 语句
 always @(posedge clk) begin
     if (en) begin
         if (reg_min == reg_llr_in_0_abs[PIPE_DELAY-1]) begin

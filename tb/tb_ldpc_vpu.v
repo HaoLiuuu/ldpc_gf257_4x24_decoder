@@ -75,6 +75,21 @@ task sys_reset;
     end
 endtask
 
+task write;
+	input [LLR_WIDTH-1:0] in_0;
+	input [LLR_WIDTH-1:0] in_1;
+	input [LLR_WIDTH-1:0] in_2;
+	input [LLR_WIDTH-1:0] in_3;
+	input [LLR_WIDTH-1:0] in_intrin;
+	begin
+		llr_in_0 <= in_0;
+		llr_in_1 <= in_1;
+		llr_in_2 <= in_2;
+		llr_in_3 <= in_3;
+		@(posedge clk);
+		llr_intri <= in_intrin;
+	end
+endtask
 
 // =============================================================================
 //                          测试用例
@@ -83,25 +98,18 @@ endtask
 initial begin
 	sys_reset(100);
 // case 1
-    llr_in_0 = 8'h28;
-    llr_in_1 = 8'h45;
-    llr_in_2 = 8'ha3;
-    llr_in_3 = 8'h93;
-    #(`PERIOD)
-    llr_intri  = 8'h22;
+	write(127, 127, 127, 127, 127);
+	write(-128, -128, -128, -128, -128);
 
-// case 2
-    llr_in_0 = 8'h11;
-    llr_in_1 = 8'h44;
-    llr_in_0 = 8'hb2;
-    llr_in_1 = 8'h41;
-   	#(`PERIOD)
-   	llr_intri  = 8'h34;
+	write(-127, -127, -127, -127, -127);
+	write(-1, -1, -1, -1, -1);
 
+
+	write(1, 1, 1, 1, 1);
 // 应该增加更多的测试用例的
 // 2022/1/10 19:41:08
 // 		是时候了解更多的 verification 了
-   	#(`PERIOD*10)
+   	repeat (5) @(posedge clk);
    	$stop;
 end
 

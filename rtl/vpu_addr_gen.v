@@ -17,8 +17,6 @@ module vpu_addr_gen #(
 	input clk,    // Clock
 	input en,
 	input rst_n,  // Asynchronous reset active low
-	input initial_on,
-	input vpu_on,
 	
 	output reg [ADDR_WIDTH-1:0] vpu_addr_0 ,
 	output reg [ADDR_WIDTH-1:0] vpu_addr_1 ,
@@ -43,7 +41,11 @@ module vpu_addr_gen #(
 	output reg [ADDR_WIDTH-1:0] vpu_addr_20,
 	output reg [ADDR_WIDTH-1:0] vpu_addr_21,
 	output reg [ADDR_WIDTH-1:0] vpu_addr_22,
-	output reg [ADDR_WIDTH-1:0] vpu_addr_23
+	output reg [ADDR_WIDTH-1:0] vpu_addr_23,
+
+	output reg [ADDR_WIDTH-1:0] vpu_addr_0_appd,
+	output reg [ADDR_WIDTH-1:0] vpu_addr_1_appd,
+	output reg [ADDR_WIDTH-1:0] vpu_addr_2_appd
 );
 
 localparam  row_start_0  = 9;
@@ -68,18 +70,22 @@ localparam  row_start_18 = 101;
 localparam  row_start_19 = 42;
 localparam  row_start_20 = 246;
 localparam  row_start_21 = 35;
-localparam  row_start_22 = 12;
+localparam  row_start_22 = 125;
 localparam  row_start_23 = 106;
 
+localparam  row_start_0_appd = 102;
+localparam  row_start_1_appd = 112;
+localparam  row_start_2_appd = 208;
+
 // 地址生成器使能信号
-wire vpu_addr_ena = vpu_on | initial_on;
+
 // =============================================================================
 //                          vpu addr generator
 // =============================================================================
 // 没有添加复位信号，不知这种写法能否被接受，还是要具体的仿真情况确定
 
 always @(posedge clk) begin
-	if (vpu_addr_ena == 1'b1)  begin
+	if (en == 1'b1)  begin
 		vpu_addr_0 <= vpu_addr_0 + 1'b1;
 	end
 	else
@@ -87,7 +93,7 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (vpu_addr_ena == 1'b1)  begin
+	if (en == 1'b1)  begin
 		vpu_addr_1 <= vpu_addr_1 + 1'b1;
 	end
 	else
@@ -95,7 +101,7 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (vpu_addr_ena == 1'b1)  begin
+	if (en == 1'b1)  begin
 		vpu_addr_2 <= vpu_addr_2 + 1'b1;
 	end
 	else
@@ -103,7 +109,7 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (vpu_addr_ena == 1'b1)  begin
+	if (en == 1'b1)  begin
 		vpu_addr_3 <= vpu_addr_3 + 1'b1;
 	end
 	else
@@ -111,7 +117,7 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (vpu_addr_ena == 1'b1)  begin
+	if (en == 1'b1)  begin
 		vpu_addr_4 <= vpu_addr_4 + 1'b1;
 	end
 	else
@@ -119,7 +125,7 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (vpu_addr_ena == 1'b1)  begin
+	if (en == 1'b1)  begin
 		vpu_addr_5 <= vpu_addr_5 + 1'b1;
 	end
 	else
@@ -127,7 +133,7 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (vpu_addr_ena == 1'b1)  begin
+	if (en == 1'b1)  begin
 		vpu_addr_6 <= vpu_addr_6 + 1'b1;
 	end
 	else
@@ -135,7 +141,7 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (vpu_addr_ena == 1'b1)  begin
+	if (en == 1'b1)  begin
 		vpu_addr_7 <= vpu_addr_7 + 1'b1;
 	end
 	else
@@ -143,7 +149,7 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (vpu_addr_ena == 1'b1)  begin
+	if (en == 1'b1)  begin
 		vpu_addr_8 <= vpu_addr_8 + 1'b1;
 	end
 	else
@@ -151,7 +157,7 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (vpu_addr_ena == 1'b1)  begin
+	if (en == 1'b1)  begin
 		vpu_addr_9 <= vpu_addr_9 + 1'b1;
 	end
 	else
@@ -159,7 +165,7 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (vpu_addr_ena == 1'b1)  begin
+	if (en == 1'b1)  begin
 		vpu_addr_10 <= vpu_addr_10 + 1'b1;
 	end
 	else
@@ -167,7 +173,7 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (vpu_addr_ena == 1'b1)  begin
+	if (en == 1'b1)  begin
 		vpu_addr_11 <= vpu_addr_11 + 1'b1;
 	end
 	else
@@ -175,7 +181,7 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (vpu_addr_ena == 1'b1)  begin
+	if (en == 1'b1)  begin
 		vpu_addr_12 <= vpu_addr_12 + 1'b1;
 	end
 	else
@@ -183,7 +189,7 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (vpu_addr_ena == 1'b1)  begin
+	if (en == 1'b1)  begin
 		vpu_addr_13 <= vpu_addr_13 + 1'b1;
 	end
 	else
@@ -191,7 +197,7 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (vpu_addr_ena == 1'b1)  begin
+	if (en == 1'b1)  begin
 		vpu_addr_14 <= vpu_addr_14 + 1'b1;
 	end
 	else
@@ -199,7 +205,7 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (vpu_addr_ena == 1'b1)  begin
+	if (en == 1'b1)  begin
 		vpu_addr_15 <= vpu_addr_15 + 1'b1;
 	end
 	else
@@ -207,7 +213,7 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (vpu_addr_ena == 1'b1)  begin
+	if (en == 1'b1)  begin
 		vpu_addr_16 <= vpu_addr_16 + 1'b1;
 	end
 	else
@@ -215,7 +221,7 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (vpu_addr_ena == 1'b1)  begin
+	if (en == 1'b1)  begin
 		vpu_addr_17 <= vpu_addr_17 + 1'b1;
 	end
 	else
@@ -223,7 +229,7 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (vpu_addr_ena == 1'b1)  begin
+	if (en == 1'b1)  begin
 		vpu_addr_18 <= vpu_addr_18 + 1'b1;
 	end
 	else
@@ -231,7 +237,7 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (vpu_addr_ena == 1'b1)  begin
+	if (en == 1'b1)  begin
 		vpu_addr_19 <= vpu_addr_19 + 1'b1;
 	end
 	else
@@ -239,7 +245,7 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (vpu_addr_ena == 1'b1)  begin
+	if (en == 1'b1)  begin
 		vpu_addr_20 <= vpu_addr_20 + 1'b1;
 	end
 	else
@@ -247,7 +253,7 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (vpu_addr_ena == 1'b1)  begin
+	if (en == 1'b1)  begin
 		vpu_addr_21 <= vpu_addr_21 + 1'b1;
 	end
 	else
@@ -255,7 +261,7 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (vpu_addr_ena == 1'b1)  begin
+	if (en == 1'b1)  begin
 		vpu_addr_22 <= vpu_addr_22 + 1'b1;
 	end
 	else
@@ -263,13 +269,38 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (vpu_addr_ena == 1'b1)  begin
+	if (en == 1'b1)  begin
 		vpu_addr_23 <= vpu_addr_23 + 1'b1;
 	end
 	else
 		vpu_addr_23 <= row_start_23;
 end
 
+// appd gen
+
+always @(posedge clk) begin
+	if (en == 1'b1)  begin
+		vpu_addr_0_appd <= vpu_addr_0_appd + 1'b1;
+	end
+	else
+		vpu_addr_0_appd <= row_start_0_appd;
+end
+
+always @(posedge clk) begin
+	if (en == 1'b1)  begin
+		vpu_addr_1_appd <= vpu_addr_1_appd + 1'b1;
+	end
+	else
+		vpu_addr_1_appd <= row_start_1_appd;
+end
+
+always @(posedge clk) begin
+	if (en == 1'b1)  begin
+		vpu_addr_2_appd <= vpu_addr_2_appd + 1'b1;
+	end
+	else
+		vpu_addr_2_appd <= row_start_2_appd;
+end
 
 endmodule
 

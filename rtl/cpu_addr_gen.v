@@ -15,9 +15,7 @@ module cpu_addr_gen #(
 	parameter ADDR_WIDTH = 8
 )(
 	input clk,    // Clock
-	input en,
-	input rst_n,  // Asynchronous reset active low
-	input cpu_on,
+	input cpu_addr_ena,
 
 	output reg [ADDR_WIDTH-1:0] cpu_addr_0 ,
 	output reg [ADDR_WIDTH-1:0] cpu_addr_1 ,
@@ -45,9 +43,6 @@ module cpu_addr_gen #(
 	output reg [ADDR_WIDTH-1:0] cpu_addr_23
 	
 );
-
-
-wire cpu_addr_ena = cpu_on;
 
 always @(posedge clk) begin
 	if (cpu_addr_ena == 1'b1)  begin

@@ -23,7 +23,7 @@ module ldpc_vpu #(
     input [LLR_WIDTH-1:0] llr_intri, // intrinsic message
 
     input [LLR_WIDTH-1:0] llr_in_0,
-    input [LLR_WIDTH-1:0] llr_in_1,
+    input [LLR_WIDTH-1:0] llr_in_1, //! 输入外信息
     input [LLR_WIDTH-1:0] llr_in_2,
     input [LLR_WIDTH-1:0] llr_in_3,
 
@@ -86,8 +86,8 @@ end
 // --- 加入 intrinsic message
 // reg_sum_2nd 其实就是扩展之后的 llr_all
 
-wire signed [LLR_WIDTH:0] sum_2nd;
-reg [LLR_WIDTH:0] reg_sum_2nd;
+wire signed [LLR_WIDTH+2:0] sum_2nd;
+reg [LLR_WIDTH+2:0] reg_sum_2nd;
 assign sum_2nd = $signed(reg_sum_01) + $signed(reg_sum_23) + $signed(llr_intri);
 
 always @(posedge clk) begin
@@ -100,10 +100,10 @@ wire [LLR_WIDTH-1:0] reg_ok_llr_1 = reg_llr_in_1[VN_STAGE-1];
 wire [LLR_WIDTH-1:0] reg_ok_llr_2 = reg_llr_in_2[VN_STAGE-1];
 wire [LLR_WIDTH-1:0] reg_ok_llr_3 = reg_llr_in_3[VN_STAGE-1];
 
-wire signed [LLR_WIDTH:0] llr_out_0_pre = $signed(reg_sum_2nd) - $signed(reg_ok_llr_0);
-wire signed [LLR_WIDTH:0] llr_out_1_pre = $signed(reg_sum_2nd) - $signed(reg_ok_llr_1);
-wire signed [LLR_WIDTH:0] llr_out_2_pre = $signed(reg_sum_2nd) - $signed(reg_ok_llr_2);
-wire signed [LLR_WIDTH:0] llr_out_3_pre = $signed(reg_sum_2nd) - $signed(reg_ok_llr_3);
+wire signed [LLR_WIDTH+1:0] llr_out_0_pre = $signed(reg_sum_2nd) - $signed(reg_ok_llr_0);
+wire signed [LLR_WIDTH+1:0] llr_out_1_pre = $signed(reg_sum_2nd) - $signed(reg_ok_llr_1);
+wire signed [LLR_WIDTH+1:0] llr_out_2_pre = $signed(reg_sum_2nd) - $signed(reg_ok_llr_2);
+wire signed [LLR_WIDTH+1:0] llr_out_3_pre = $signed(reg_sum_2nd) - $signed(reg_ok_llr_3);
 
 // =============================================================================
 //                          输出
@@ -112,36 +112,36 @@ wire signed [LLR_WIDTH:0] llr_out_3_pre = $signed(reg_sum_2nd) - $signed(reg_ok_
 // =============================================================================
 
 always @(posedge clk) begin
-	if (~llr_out_0_pre[LLR_WIDTH] & llr_out_0_pre[LLR_WIDTH-1]) // + overflow
+	if (~llr_out_0_pre[LLR_WIDTH+1] & (llr_out_0_pre[LLR_WIDTH] | llr_out_0_pre[LLR_WIDTH-1])) // + overflow
 		llr_out_0 <= {1'b0, {(LLR_WIDTH-1){1'b1}}};
-	else if (llr_out_0_pre[LLR_WIDTH] & ~llr_out_0_pre[LLR_WIDTH-1]) // - overflow
+	else if (llr_out_0_pre[LLR_WIDTH+1] & ~(llr_out_0_pre[LLR_WIDTH] & llr_out_0_pre[LLR_WIDTH-1])) // - overflow
 		llr_out_0 <= {1'b1, {(LLR_WIDTH-1){1'b0}}};
 	else
 		llr_out_0 <= llr_out_0_pre[LLR_WIDTH-1:0];
 end
 
 always @(posedge clk) begin
-	if (~llr_out_1_pre[LLR_WIDTH] & llr_out_1_pre[LLR_WIDTH-1]) // + overflow
+	if (~llr_out_1_pre[LLR_WIDTH+1] & (llr_out_1_pre[LLR_WIDTH] | llr_out_1_pre[LLR_WIDTH-1])) // + overflow
 		llr_out_1 <= {1'b0, {(LLR_WIDTH-1){1'b1}}};
-	else if (llr_out_1_pre[LLR_WIDTH] & ~llr_out_1_pre[LLR_WIDTH-1]) // - overflow
+	else if (llr_out_1_pre[LLR_WIDTH+1] & ~(llr_out_1_pre[LLR_WIDTH] & llr_out_1_pre[LLR_WIDTH-1])) // - overflow
 		llr_out_1 <= {1'b1, {(LLR_WIDTH-1){1'b0}}};
 	else
 		llr_out_1 <= llr_out_1_pre[LLR_WIDTH-1:0];
 end
 
 always @(posedge clk) begin
-	if (~llr_out_2_pre[LLR_WIDTH] & llr_out_2_pre[LLR_WIDTH-1]) // + overflow
+	if (~llr_out_2_pre[LLR_WIDTH+1] & (llr_out_2_pre[LLR_WIDTH] | llr_out_2_pre[LLR_WIDTH-1])) // + overflow
 		llr_out_2 <= {1'b0, {(LLR_WIDTH-1){1'b1}}};
-	else if (llr_out_2_pre[LLR_WIDTH] & ~llr_out_2_pre[LLR_WIDTH-1]) // - overflow
+	else if (llr_out_2_pre[LLR_WIDTH+1] & ~(llr_out_2_pre[LLR_WIDTH] & llr_out_2_pre[LLR_WIDTH-1])) // - overflow
 		llr_out_2 <= {1'b1, {(LLR_WIDTH-1){1'b0}}};
 	else
 		llr_out_2 <= llr_out_2_pre[LLR_WIDTH-1:0];
 end
 
 always @(posedge clk) begin
-	if (~llr_out_3_pre[LLR_WIDTH] & llr_out_3_pre[LLR_WIDTH-1]) // + overflow
+	if (~llr_out_3_pre[LLR_WIDTH+1] & (llr_out_3_pre[LLR_WIDTH] | llr_out_3_pre[LLR_WIDTH-1])) // + overflow
 		llr_out_3 <= {1'b0, {(LLR_WIDTH-1){1'b1}}};
-	else if (llr_out_3_pre[LLR_WIDTH] & ~llr_out_3_pre[LLR_WIDTH-1]) // - overflow
+	else if (llr_out_3_pre[LLR_WIDTH+1] & ~(llr_out_3_pre[LLR_WIDTH] & llr_out_3_pre[LLR_WIDTH-1])) // - overflow
 		llr_out_3 <= {1'b1, {(LLR_WIDTH-1){1'b0}}};
 	else
 		llr_out_3 <= llr_out_3_pre[LLR_WIDTH-1:0];
@@ -149,12 +149,12 @@ end
 
 // llr_all
 always @(posedge clk) begin
-	if (~reg_sum_2nd[LLR_WIDTH] & reg_sum_2nd[LLR_WIDTH-1]) // + overflow
-		llr_all <= {1'b0, {(LLR_WIDTH-1){1'b1}}};
-	else if (reg_sum_2nd[LLR_WIDTH] & ~reg_sum_2nd[LLR_WIDTH-1]) // - overflow
-		llr_all <= {1'b1, {(LLR_WIDTH-1){1'b0}}};
-	else
-		llr_all <= reg_sum_2nd[LLR_WIDTH-1:0];
+	// if (~reg_sum_2nd[LLR_WIDTH+1] & reg_sum_2nd[LLR_WIDTH]) // + overflow
+	// 	llr_all <= {1'b0, {(LLR_WIDTH-1){1'b1}}};
+	// else if (reg_sum_2nd[LLR_WIDTH+1] & ~reg_sum_2nd[LLR_WIDTH]) // - overflow
+	// 	llr_all <= {1'b1, {(LLR_WIDTH-1){1'b0}}};
+	// else
+	llr_all <= reg_sum_2nd[LLR_WIDTH+2:3];
 end
 
 endmodule
