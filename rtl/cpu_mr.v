@@ -465,31 +465,100 @@ reg  [LLR_WIDTH-2:0] reg_bs_submin_2out [B_STAGE_SIG_1OF3-1:0];
 reg  [LLR_WIDTH-2:0] reg_bs_submin_1out [B_STAGE_SIG_1OF3-1:0];
 
 // 2in2out comparator
-generate
-    // 2in2out comparator
-    for (i = 0; i < B_STAGE_SIG_1OF3; i = i + 1) begin : b_stage_1
-        comp2in2out #(
-                .WIDTH(LLR_WIDTH-1)
-            ) inst_comp2in2out (
-                .in_1(reg_as_min[i*2])          , 
-                .in_2(reg_as_min[i*2+1])        , 
-                .min_v(bs_min[i])               , 
-                .submin_v(bs_submin_2out[i])
-            );
+// generate
+//     // 2in2out comparator
+//     for (i = 0; i < B_STAGE_SIG_1OF3; i = i + 1) begin : b_stage_1
+//         comp2in2out #(
+//                 .WIDTH(LLR_WIDTH-1)
+//             ) inst_comp2in2out (
+//                 .in_1(reg_as_min[i*2])          , 
+//                 .in_2(reg_as_min[i*2+1])        , 
+//                 .min_v(bs_min[i])               , 
+//                 .submin_v(bs_submin_2out[i])
+//             );
 
-    end
-endgenerate
+//     end
+// endgenerate
+
+comp3in2out #(
+  .WIDTH (LLR_WIDTH-1)
+  ) comp3in2out_dut_u21 (
+    .in_1 (reg_as_min[0] ),
+    .in_2 (reg_as_min[1] ),
+    .in_3 (reg_as_min[2] ),
+    .min_v (bs_min[0] ),
+    .submin_v  ( bs_submin_2out[0])
+  );
+
+comp3in1out #(
+      .WIDTH(LLR_WIDTH-1)
+    ) inst_comp3in1out_u22 (
+      .in_1(reg_as_submin[0])     ,
+      .in_2(reg_as_submin[1])       ,
+      .in_3(reg_as_submin[2])   ,
+      .min_v(bs_submin_1out[0])
+    );
+
+comp2in2out #(
+    .WIDTH (LLR_WIDTH-1)
+  ) comp2in2out_dut_u23 (
+    .in_1      (reg_as_min[2]),
+    .in_2      (reg_as_min[3]),
+    .min_v     (bs_min[1]),
+    .submin_v  (bs_submin_2out[1])
+  );
+
+// 2in1out u24
+assign bs_submin_1out[1] = (reg_as_submin[2] > reg_as_submin[3]) ?
+                            reg_as_submin[3] :
+                            reg_as_submin[2] ;
+
+// 当运行到 4x16 状态时进行了一个修正
+wire [LLR_WIDTH-1:0] din3_u25 = sel_p20 ? reg_as_min[6] : reg_llr_in_15_abs[0];
+comp3in2out #(
+  .WIDTH (LLR_WIDTH-1)
+  ) comp3in2out_dut_u25 (
+    .in_1 (reg_as_min[4] ),
+    .in_2 (reg_as_min[5] ),
+    // 取 DFF 输出后的值
+    .in_3 (din3_u25),
+    .min_v (bs_min[2] ),
+    .submin_v  ( bs_submin_2out[2])
+  );
+
+comp3in1out #(
+      .WIDTH(LLR_WIDTH-1)
+    ) inst_comp3in1out_u26 (
+      .in_1(reg_as_submin[4])     ,
+      .in_2(reg_as_submin[5])       ,
+      .in_3(reg_as_submin[6])   ,
+      .min_v(bs_submin_1out[2])
+    );
+
+comp2in2out #(
+    .WIDTH (LLR_WIDTH-1)
+  ) comp2in2out_dut_u23 (
+    .in_1      (reg_as_min[6]),
+    .in_2      (reg_as_min[7]),
+    .min_v     (bs_min[3]),
+    .submin_v  (bs_submin_2out[3])
+  );
+
+assign bs_submin_1out[3] = (reg_as_submin[6] > reg_as_submin[7]) ?
+                              reg_as_submin[7] :
+                              reg_as_submin[6] ;
 
 // 2in1out comparator
-generate
-    // 2in1out comparator
-    for (i = 0; i < B_STAGE_SIG_1OF3; i = i + 1) begin : b_stage_2
-        assign bs_submin_1out[i] = 
-            (reg_as_submin[i*2] > reg_as_submin[i*2+1]) ? 
-                                  reg_as_submin[i*2+1]  :
-                                  reg_as_submin[i*2]    ;
-    end
-endgenerate
+// generate
+//     // 2in1out comparator
+//     for (i = 0; i < B_STAGE_SIG_1OF3; i = i + 1) begin : b_stage_2
+//         assign bs_submin_1out[i] = 
+//             (reg_as_submin[i*2] > reg_as_submin[i*2+1]) ? 
+//                                   reg_as_submin[i*2+1]  :
+//                                   reg_as_submin[i*2]    ;
+//     end
+// endgenerate
+
 
 // reg
 generate
@@ -518,28 +587,73 @@ reg  [LLR_WIDTH-2:0] reg_cs_submin_2    [C_STAGE_SIG-1:0]   ;
 reg  [LLR_WIDTH-2:0] reg_cs_min         [C_STAGE_SIG-1:0]   ;
 
 // 2in1out comparator for cs_submin_1
-generate
-    for (i = 0; i < C_STAGE_SIG * 2; i = i + 1) begin : c_stage_1
-        assign cs_submin_1[i] = 
-                (reg_bs_submin_2out[i] > reg_bs_submin_1out[i]) ?
-                                         reg_bs_submin_1out[i]  :
-                                         reg_bs_submin_2out[i]  ;
-    end
-endgenerate
+// generate
+//     for (i = 0; i < C_STAGE_SIG * 2; i = i + 1) begin : c_stage_1
+//         assign cs_submin_1[i] = 
+//                 (reg_bs_submin_2out[i] > reg_bs_submin_1out[i]) ?
+//                                          reg_bs_submin_1out[i]  :
+//                                          reg_bs_submin_2out[i]  ;
+//     end
+// endgenerate
 
-// 2in2out comparator for cs_min and cs_submin2
-generate
-    for (i = 0; i < C_STAGE_SIG; i = i + 1) begin : c_stage_2
-        comp2in2out #(
-                .WIDTH(LLR_WIDTH-1)
-            ) inst_comp2in2out (
-                .in_1(reg_bs_min[i*2])          , 
-                .in_2(reg_bs_min[i*2+1])        , 
-                .min_v(cs_min[i])               , 
-                .submin_v(cs_submin_2[i])
-            );
-    end
-endgenerate
+// // 2in2out comparator for cs_min and cs_submin2
+// generate
+//     for (i = 0; i < C_STAGE_SIG; i = i + 1) begin : c_stage_2
+//         comp2in2out #(
+//                 .WIDTH(LLR_WIDTH-1)
+//             ) inst_comp2in2out (
+//                 .in_1(reg_bs_min[i*2])          , 
+//                 .in_2(reg_bs_min[i*2+1])        , 
+//                 .min_v(cs_min[i])               , 
+//                 .submin_v(cs_submin_2[i])
+//             );
+//     end
+// endgenerate
+
+// 2in1out
+assign cs_submin_1[0] = reg_bs_submin_2out[0] > reg_bs_submin_1out[0] ?
+                          reg_bs_submin_1out[0] :
+                          reg_bs_submin_2out[0];
+
+comp3in2out #(
+  .WIDTH (LLR_WIDTH-1)
+  ) comp3in2out_dut_u32 (
+    .in_1 (reg_bs_min[0] ),
+    .in_2 (reg_bs_min[1] ),
+    // 取 DFF 输出后的值
+    .in_3 (reg_bs_min[2]),
+    .min_v (cs_min[0] ),
+    .submin_v  (cs_submin_2[0])
+  );
+
+comp3in1out #(
+      .WIDTH(LLR_WIDTH-1)
+    ) inst_comp3in1out_u33 (
+      .in_1(reg_bs_submin_2out[1])   ,
+      .in_2(reg_bs_submin_1out[1])   ,
+      .in_3(reg_bs_submin_2out[2])   ,
+      .min_v(cs_submin_1[1])
+    );
+
+// 2in1out u34
+assign cs_submin_1[2] = reg_bs_submin_2out[2] > reg_bs_submin_1out[2] ?
+                          reg_bs_submin_1out[2] :
+                          reg_bs_submin_2out[2] ;
+
+
+comp2in2out #(
+    .WIDTH (LLR_WIDTH-1)
+  ) comp2in2out_dut_u35 (
+    .in_1      (reg_bs_min[2]),
+    .in_2      (reg_bs_min[3]),
+    .min_v     (cs_min[1]),
+    .submin_v  (cs_submin_2[1])
+  );
+
+// 2in1out u36
+assign cs_submin_1[3] = reg_bs_submin_2out[3] > reg_bs_submin_1out[3] ?
+                          reg_bs_submin_1out[3] :
+                          reg_bs_submin_2out[3] ;
 
 // reg output
 generate
@@ -567,37 +681,64 @@ wire [LLR_WIDTH-2:0] ds_submin_2        [D_STAGE_SIG-1:0];
 reg  [LLR_WIDTH-2:0] reg_ds_min         [D_STAGE_SIG-1:0];
 reg  [LLR_WIDTH-2:0] reg_ds_submin_1    [C_STAGE_SIG-1:0];
 reg  [LLR_WIDTH-2:0] reg_ds_submin_2    [D_STAGE_SIG-1:0];
+reg  [LLR_WIDTH-2:0] reg_ds_submin_app ;
 
 // 3in1out comparator
-generate
-    // 这里的数目恰好和前一级流水的相同 ！！！需要注意
-    for (i = 0; i < C_STAGE_SIG ; i = i + 1) begin : d_stage_1
-        comp3in1out #(
-                .WIDTH(LLR_WIDTH-1)
-            ) inst_comp3in1out (
-                .in_1(reg_cs_submin_1[i*2])     ,
-                .in_2(reg_cs_submin_2[i])       ,
-                .in_3(reg_cs_submin_1[i*2+1])   ,
-                .min_v(ds_submin_1[i])
-            );
-    end
-endgenerate
+// generate
+//     // 这里的数目恰好和前一级流水的相同 ！！！需要注意
+//     for (i = 0; i < C_STAGE_SIG ; i = i + 1) begin : d_stage_1
+//         comp3in1out #(
+//                 .WIDTH(LLR_WIDTH-1)
+//             ) inst_comp3in1out (
+//                 .in_1(reg_cs_submin_1[i*2])     ,
+//                 .in_2(reg_cs_submin_2[i])       ,
+//                 .in_3(reg_cs_submin_1[i*2+1])   ,
+//                 .min_v(ds_submin_1[i])
+//             );
+//     end
+// endgenerate
 
-// 2in2out comparator
-generate
-    for (i = 0; i < D_STAGE_SIG; i = i + 1) begin : d_stage_2
-        comp2in2out #(
-                .WIDTH(LLR_WIDTH-1)
-            ) inst_comp2in2out (
-                .in_1(reg_cs_min[i*2])      , 
-                .in_2(reg_cs_min[i*2+1])    , 
-                .min_v(ds_min[i])           ,
-                .submin_v(ds_submin_2[i])
-            );
-    end
-endgenerate
+// // 2in2out comparator
+// generate
+//     for (i = 0; i < D_STAGE_SIG; i = i + 1) begin : d_stage_2
+//         comp2in2out #(
+//                 .WIDTH(LLR_WIDTH-1)
+//             ) inst_comp2in2out (
+//                 .in_1(reg_cs_min[i*2])      , 
+//                 .in_2(reg_cs_min[i*2+1])    , 
+//                 .min_v(ds_min[i])           ,
+//                 .submin_v(ds_submin_2[i])
+//             );
+//     end
+// endgenerate
 
-// reg output
+comp3in1out #(
+        .WIDTH(LLR_WIDTH-1)
+    ) inst_comp3in1out_u41 (
+        .in_1(reg_cs_submin_1[0])     ,
+        .in_2(reg_cs_submin_2[0])       ,
+        .in_3(reg_cs_submin_1[1])   ,
+        .min_v(ds_submin_1[0])
+    );
+
+comp2in2out #(
+        .WIDTH(LLR_WIDTH-1)
+    ) inst_comp2in2out_u42 (
+        .in_1(reg_cs_min[0])      , 
+        .in_2(reg_cs_min[1])    , 
+        .min_v(ds_min[0])           ,
+        .submin_v(ds_submin_2[i])
+    );
+
+comp3in1out #(
+        .WIDTH(LLR_WIDTH-1)
+    ) inst_comp3in1out_u41 (
+        .in_1(reg_cs_submin_1[2])     ,
+        .in_2(reg_cs_submin_2[1])       ,
+        .in_3(reg_cs_submin_1[3])   ,
+        .min_v(ds_submin_1[0])
+    );
+
 generate
     for (i = 0; i < D_STAGE_SIG; i = i + 1) begin : d_stage_reg
         always @(posedge clk) begin
@@ -610,6 +751,14 @@ generate
         end
     end
 endgenerate
+
+// 2023-02-22 16:25:00
+// 使能信号选择需要考虑
+always @(posedge clk) begin
+  if (en) begin
+    reg_ds_submin_app <= reg_cs_submin_1[2];
+  end
+end
 
 // =============================================================================
 //                          5th-stage pipeline
@@ -635,6 +784,15 @@ comp3in1out #(
         .min_v(final_submin)
     );
 
+
+wire [LLR_WIDTH-2:0] reg_submin_p20;
+assign reg_submin_p20 = reg_pre_submin[0] > reg_ds_submin_app ?
+                          reg_ds_submin_app :
+                          reg_pre_submin[0] ;
+
+// 2023-02-22 16:45:16
+// 不同状态下选择最终的输
+// 不同的码下选择最终的最小值及次小值
 always @(posedge clk) begin
 	if (en) begin
 		reg_final_submin <= final_submin;
@@ -709,6 +867,36 @@ end
 // =============================================================================
 //                          output llr
 // =============================================================================
+
+// 2023-02-22 20:17:17
+// 多码率时需要选择最终对比的数据
+wire [LLR_WIDTH-1] llr_0_abs_for_comp;
+wire [LLR_WIDTH-1] llr_1_abs_for_comp;
+wire [LLR_WIDTH-1] llr_2_abs_for_comp;
+wire [LLR_WIDTH-1] llr_3_abs_for_comp;
+wire [LLR_WIDTH-1] llr_4_abs_for_comp;
+wire [LLR_WIDTH-1] llr_5_abs_for_comp;
+wire [LLR_WIDTH-1] llr_6_abs_for_comp;
+wire [LLR_WIDTH-1] llr_7_abs_for_comp;
+wire [LLR_WIDTH-1] llr_8_abs_for_comp;
+wire [LLR_WIDTH-1] llr_9_abs_for_comp;
+wire [LLR_WIDTH-1] llr_10_abs_for_comp;
+wire [LLR_WIDTH-1] llr_11_abs_for_comp;
+wire [LLR_WIDTH-1] llr_12_abs_for_comp;
+wire [LLR_WIDTH-1] llr_13_abs_for_comp;
+wire [LLR_WIDTH-1] llr_14_abs_for_comp;
+wire [LLR_WIDTH-1] llr_15_abs_for_comp;
+wire [LLR_WIDTH-1] llr_16_abs_for_comp;
+wire [LLR_WIDTH-1] llr_17_abs_for_comp;
+wire [LLR_WIDTH-1] llr_18_abs_for_comp;
+wire [LLR_WIDTH-1] llr_19_abs_for_comp;
+wire [LLR_WIDTH-1] llr_20_abs_for_comp;
+wire [LLR_WIDTH-1] llr_21_abs_for_comp;
+wire [LLR_WIDTH-1] llr_22_abs_for_comp;
+wire [LLR_WIDTH-1] llr_23_abs_for_comp;
+
+
+
 // 2022/1/17 16:47:10
 // 这一部分输出逻辑可以试试用 case 语句
 always @(posedge clk) begin
